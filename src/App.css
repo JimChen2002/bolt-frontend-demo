@@ -1,0 +1,174 @@
+
+.bg-preview {
+    height: 18em;
+    width: 32em;
+    max-height: 60vh;
+    max-width: 100%;
+    margin: .5em auto 1em;
+    box-shadow: 0 1px 5px rgba(0,0,0,.4);
+}
+
+body {
+    background-size: cover;
+    user-select: none;
+    width: 100%;
+}
+
+body.root-dark-mode {
+    background-color: black;
+}
+
+html::-webkit-scrollbar {
+    display: none;
+}
+html {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+:root {
+    --var-link-color: #00c;
+}
+
+a {
+    color: var(--var-link-color);
+}
+a:not(.no-underline):hover {
+    border-bottom: 1px solid var(--var-link-color);
+    margin-bottom: -1px;
+}
+
+input, textarea {
+    border-radius: 5px;
+    border: 1px solid black;
+    outline: none;
+    margin: 0;
+}
+input {
+    padding: 0 1em;
+    line-height: 2em;
+}
+
+button, .button {
+    color: black;
+    background-color: rgba(235,235,235,.5);
+    border-radius: 5px;
+    text-align: center;
+    border: 1px solid black;
+    line-height: 2em;
+    margin: 0 .5rem;
+}
+
+button:hover, .button:hover {
+    background-color: rgba(255,255,255,.7);
+}
+
+button:disabled, .button:disabled {
+    background-color: rgba(128,128,128,.5);
+}
+
+.margin-popup {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.hljs {
+    white-space: pre-wrap;
+}
+
+:root {
+    --box-bgcolor-light: hsl(0, 0%, 97%);
+    --box-bgcolor-dark: hsl(0, 0%, 16%);
+}
+  
+.box {
+    background-color: var(--box-bgcolor-light);
+    color: black;
+    border-radius: 5px;
+    margin: 1em 0;
+    padding: 0.5em;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.box-tip {
+    min-width: 100px;
+    z-index: 1;
+    text-align: center;
+}
+
+.sidebar-flow-item .flow-item pre,
+.sidebar-flow-item .flow-reply pre {
+  cursor: text;
+}
+
+
+.treehollow-login-popup {
+    font-size: 1rem;
+    background-color: #f7f7f7;
+    color: black;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 320px;
+    z-index: 114515;
+    transform: translateX(-50%) translateY(-50%);
+    border-radius: 5px;
+}
+.treehollow-login-popup a {
+    color: #00c;
+}
+.treehollow-login-popup p {
+    margin: .75em 0;
+    text-align: center;
+}
+/* override ant design */
+.treehollow-login-popup input, .treehollow-login-popup button {
+    font-size: .85em;
+    vertical-align: middle;
+}
+.treehollow-login-popup input:not([type="checkbox"]) {
+    width: 8rem;
+    border-radius: 5px;
+    border: 1px solid black;
+    outline: none;
+    margin: 0;
+    padding: 0 .5em;
+    line-height: 2em;
+}
+.treehollow-login-popup button {
+    width: 6rem;
+    color: black;
+    background-color: rgba(235,235,235,.5);
+    border-radius: 5px;
+    text-align: center;
+    border: 1px solid black;
+    line-height: 2em;
+    margin: 0 .5rem;
+}
+.treehollow-login-popup button:hover {
+    background-color: rgba(255,255,255,.7);
+}
+.treehollow-login-popup button:disabled {
+    background-color: rgba(128,128,128,.5);
+}
+.treehollow-login-type {
+    display: inline-block;
+    width: 6rem;
+    margin: 0 .5rem;
+}
+.treehollow-login-popup-shadow {
+    opacity: .5;
+    background-color: black;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 114514;
+}
+
+.treehollow-login-popup label.perm-item {
+    font-size: .8em;
+    vertical-align: .1rem;
+    margin-left: .5rem;
+}

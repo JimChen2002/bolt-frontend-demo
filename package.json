@@ -1,0 +1,61 @@
+{
+  "name": "cmuhole",
+  "version": "3.0.6",
+  "private": true,
+  "dependencies": {
+    "copy-to-clipboard": "^3.3.1",
+    "detect-browser": "^5.2.0",
+    "fix-orientation": "^1.1.0",
+    "gh-pages": "^3.1.0",
+    "highlight.js": "^10.4.0",
+    "html-to-react": "^1.4.5",
+    "load-script": "^1.0.0",
+    "markdown-it": "^12.0.2",
+    "markdown-it-katex": "^2.0.3",
+    "nanoid": "^3.1.20",
+    "pressure": "^2.2.0",
+    "pubsub-js": "^1.9.3",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "react-google-recaptcha": "^2.1.0",
+    "react-google-recaptcha-v3": "^1.7.0",
+    "react-imageslides": "^2.1.1",
+    "react-scripts": "^3.4.4",
+    "react-timeago": "^4.4.0",
+    "react-transition-group": "^4.4.1",
+    "ua-parser-js": "^0.7.24"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "echo 'skipped react-scripts test --env=jsdom'",
+    "predeploy": "",
+    "deploy": "gh-pages -b $DEPLOY_BRANCH -d build -m $(TZ=Asia/Shanghai date +\"%y%m%d%H%M%S\")",
+    "eject": "react-scripts eject",
+    "lint": "eslint --fix src/*.js"
+  },
+  "homepage": ".",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-standard": "^4.1.0",
+    "prettier": "^2.2.0"
+  }
+}
