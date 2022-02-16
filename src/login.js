@@ -247,7 +247,7 @@ class LoginPopupSelf extends Component {
             alert('Phone Checked Successfully!');
             this.setState({
               loading_status: 'done',
-              phase: 1,
+              phase: 2,
             });
           })
           .catch((e) => {
