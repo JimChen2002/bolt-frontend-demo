@@ -16,6 +16,7 @@ class LoginPopupSelf extends Component {
       loading_status: 'idle',
       recaptcha_verified: false,
       email_verified: false,
+      phone_verified: false,
       phase: 0,
     };
 
@@ -149,7 +150,7 @@ class LoginPopupSelf extends Component {
           .then((res) => res.json())
           .then((json) => {
             if (json.code !== 0) throw new Error(json.msg);
-            this.props.token_callback(json.token);
+            //this.props.token_callback(json.token);
             alert('Email Checked Successfully!');
             this.setState({
               loading_status: 'done',
@@ -158,6 +159,99 @@ class LoginPopupSelf extends Component {
           })
           .catch((e) => {
             alert('Fail to check email verification code\n' + e);
+            this.setState({
+              loading_status: 'done',
+            });
+            console.error(e);
+          });
+      },
+    );
+  }
+
+  verify_phone(failed_callback) {
+    const old_token = new URL(location.href).searchParams.get('old_token');
+    const phone = this.ref.phone.current.value;
+    // VALIDATE EMAIL IN FRONT-END HERE
+    const body = new URLSearchParams();
+    Object.entries({
+      phone,
+      old_token,
+    }).forEach((param) => body.append(...param));
+    this.setState(
+      {
+        loading_status: 'loading',
+      },
+      () => {
+        fetch(API_ROOT + 'security/login/check_phone?' + API_VERSION_PARAM(), {
+          method: 'POST',
+          body,
+        })
+          .then((res) => res.json())
+          .then((json) => {
+            // COMMENT NEXT LINE
+            //json.code = 2;
+            if (json.code < 0) throw new Error(json.msg);
+            if (json.code == 1){
+              alert("Verification SMS Sent Successfully!");
+              this.setState({
+                loading_status: 'done',
+                phone_verified: true,
+              });
+            }
+            else{
+              alert('Fail to check phone\n');
+              this.setState({
+                loading_status: 'done',
+              });
+            }
+          })
+          .catch((e) => {
+            alert('Fail to check phone\n' + e);
+            this.setState({
+              loading_status: 'done',
+            });
+            console.error(e);
+          });
+      },
+    );
+  }
+
+  verify_phone_code() {
+    if(!this.state.phone_verified){
+      alert("Please enter your phone first!");
+      return;
+    }
+    const old_token = new URL(location.href).searchParams.get('old_token');
+    const phone = this.ref.phone.current.value;
+    const valid_code = this.ref.phone_verification.current.value;
+    // VALIDATE EMAIL IN FRONT-END HERE
+    const body = new URLSearchParams();
+    Object.entries({
+      phone,
+      old_token,
+      valid_code,
+    }).forEach((param) => body.append(...param));
+    this.setState(
+      {
+        loading_status: 'loading',
+      },
+      () => {
+        fetch(API_ROOT + 'security/login/check_phone_code?' + API_VERSION_PARAM(), {
+          method: 'POST',
+          body,
+        })
+          .then((res) => res.json())
+          .then((json) => {
+            if (json.code !== 0) throw new Error(json.msg);
+            //this.props.token_callback(json.token);
+            alert('Phone Checked Successfully!');
+            this.setState({
+              loading_status: 'done',
+              phase: 1,
+            });
+          })
+          .catch((e) => {
+            alert('Fail to check SMS verification code\n' + e);
             this.setState({
               loading_status: 'done',
             });
@@ -260,7 +354,7 @@ class LoginPopupSelf extends Component {
                   <label>
                     Verification Code:&nbsp;
                     <input
-                      ref={this.ref.email_verification}
+                      ref={this.ref.phone_verification}
                       type="text"
                       onKeyDown={(event) => {
                         if (event.key === 'Enter') {
@@ -287,14 +381,7 @@ class LoginPopupSelf extends Component {
                   <b>KYC Form</b>
                 </p>
                 <p>
-                  <label>
-                    Verification code:&nbsp;
-                    <input
-                      ref={this.ref.email_verification}
-                      type="tel"
-                      autoFocus={true}
-                    />
-                  </label>
+                  Hi there!
                 </p>
               </>
             )}
