@@ -134,8 +134,6 @@ class LoginPopupSelf extends Component {
     Object.entries({
       email,
       old_token,
-      recaptcha_version,
-      recaptcha_token,
     }).forEach((param) => body.append(...param));
     this.setState(
       {
