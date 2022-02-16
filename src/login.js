@@ -129,11 +129,13 @@ class LoginPopupSelf extends Component {
     }
     const old_token = new URL(location.href).searchParams.get('old_token');
     const email = this.ref.email.current.value;
+    const valid_code = this.ref.email_verification.current.value;
     // VALIDATE EMAIL IN FRONT-END HERE
     const body = new URLSearchParams();
     Object.entries({
       email,
       old_token,
+      valid_code,
     }).forEach((param) => body.append(...param));
     this.setState(
       {
