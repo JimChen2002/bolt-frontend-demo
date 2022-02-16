@@ -107,8 +107,10 @@ class LoginPopupSelf extends Component {
             // COMMENT NEXT LINE
             //json.code = 2;
             if (json.code < 0) throw new Error(json.msg);
-            if (json.code == 2)
-              json.code = -1;
+            if (json.code == 1){
+              alert("Verification Email Sent Successfully!");
+              return;
+            }
             this.setState({
               loading_status: 'done',
               email_verified: true,
