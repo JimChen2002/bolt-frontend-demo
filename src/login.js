@@ -107,9 +107,12 @@ class LoginPopupSelf extends Component {
             // COMMENT NEXT LINE
             //json.code = 2;
             if (json.code < 0) throw new Error(json.msg);
+            if (json.code == 2)
+              json.code = -1;
             this.setState({
               loading_status: 'done',
               email_verified: true,
+              phase: json.code+1,
             });
             if (json.code === 3) failed_callback();
           })
@@ -131,8 +134,6 @@ class LoginPopupSelf extends Component {
     }
     const old_token = new URL(location.href).searchParams.get('old_token');
     const email = this.ref.email.current.value;
-    const recaptcha_version = version;
-    const recaptcha_token = localStorage['recaptcha'];
     // VALIDATE EMAIL IN FRONT-END HERE
     const body = new URLSearchParams();
     Object.entries({
@@ -146,78 +147,26 @@ class LoginPopupSelf extends Component {
         loading_status: 'loading',
       },
       () => {
-        fetch(API_ROOT + 'security/login/check_email?' + API_VERSION_PARAM(), {
+        fetch(API_ROOT + 'security/login/check_email_code?' + API_VERSION_PARAM(), {
           method: 'POST',
           body,
         })
           .then((res) => res.json())
           .then((json) => {
-            // COMMENT NEXT LINE
-            //json.code = 2;
-            if (json.code < 0) throw new Error(json.msg);
-            this.setState({
-              loading_status: 'done',
-            });
-            if (json.code === 3) failed_callback();
-          })
-          .catch((e) => {
-            alert('Fail to check email\n' + e);
-            this.setState({
-              loading_status: 'done',
-            });
-            console.error(e);
-          });
-      },
-    );
-  }
-
-  async new_user_registration(set_token) {
-    if (this.valid_registration() !== 0) return;
-    const email = this.ref.email.current.value;
-    const valid_code = this.ref.email_verification.current.value;
-    const password = this.ref.password.current.value;
-    let password_hashed = await this.hashpassword(password);
-    const device_info = UAParser(navigator.userAgent).browser.name;
-    const body = new URLSearchParams();
-    Object.entries({
-      email,
-      password_hashed,
-      device_type: 0,
-      device_info,
-      valid_code,
-    }).forEach((param) => body.append(...param));
-    this.setState(
-      {
-        loading_status: 'loading',
-      },
-      () => {
-        fetch(
-          API_ROOT + 'security/login/create_account?' + API_VERSION_PARAM(),
-          {
-            method: 'POST',
-            body,
-          },
-        )
-          .then(get_json)
-          .then((json) => {
-            if (json.code !== 0) {
-              if (json.msg) throw new Error(json.msg);
-              throw new Error(JSON.stringify(json));
-            }
-
+            if (json.code !== 0) throw new Error(json.msg);
             set_token(json.token);
-            alert('Login Successfully!');
+            alert('Email Checked Successfully!');
             this.setState({
               loading_status: 'done',
+              phase: 1,
             });
-            this.props.on_close();
           })
           .catch((e) => {
-            console.error(e);
-            alert('Login Failed\n' + e);
+            alert('Fail to check email verification code\n' + e);
             this.setState({
               loading_status: 'done',
             });
+            console.error(e);
           });
       },
     );
@@ -296,36 +245,58 @@ class LoginPopupSelf extends Component {
               <>
                 <p>
                   <label>
-                    Password:&nbsp;
+                    Phone:&nbsp;
                     <input
-                      ref={this.ref.password}
-                      type="password"
+                      ref={this.ref.phone}
+                      type="tel"
                       autoFocus={true}
+                      placeholder="Input your phone number"
                       onKeyDown={(event) => {
                         if (event.key === 'Enter') {
-                          this.next_step();
+                          this.verify_phone()
                         }
                       }}
                     />
                   </label>
                 </p>
                 <p>
-                  <a
-                    onClick={() => {
-                      alert(
-                        'You can delete and sign up again in the sidebar.',
-                      );
+                  <button
+                    onClick={()=>{
+                      this.verify_phone()
                     }}
                   >
-                    Forget your password?
-                  </a>
+                    <b>Send</b>
+                  </button>
+                </p>
+                <p>
+                  <label>
+                    Verification Code:&nbsp;
+                    <input
+                      ref={this.ref.email_verification}
+                      type="text"
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          this.verify_phone_code()
+                        }
+                      }}
+                    />
+                  </label>
+                </p>
+                <p>
+                  <button
+                    onClick={()=>{
+                      this.verify_phone_code()
+                    }}
+                  >
+                    <b>Confirm</b>
+                  </button>
                 </p>
               </>
             )}
-            {this.state.phase === 1 && (
+            {this.state.phase === 2 && (
               <>
                 <p>
-                  <b>New user sign up</b>
+                  <b>KYC Form</b>
                 </p>
                 <p>
                   <label>
@@ -339,38 +310,14 @@ class LoginPopupSelf extends Component {
                 </p>
               </>
             )}
-            {this.state.phase === 2 && (
-              <>
-                <p>
-                  <b>Old user sign up</b>
-                </p>
-              </>
-            )}
-            {(this.state.phase === 1 || this.state.phase === 2) && (
-              <>
-                <p>
-                  <label>
-                    Password:&nbsp;
-                    <input ref={this.ref.password} type="password" />
-                  </label>
-                </p>
-                <p>
-                  <label>
-                    Enter password again:&nbsp;
-                    <input
-                      ref={this.ref.password_confirm}
-                      type="password"
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          this.next_step();
-                        }
-                      }}
-                    />
-                  </label>
-                </p>
-              </>
-            )}
             {this.state.phase === 3 && (
+              <>
+                <p>
+                  <b>Backup Plan</b>
+                </p>
+              </>
+            )}
+            {this.state.phase === 4 && (
               <>
                 <p>
                   <b>Enter verification code:</b>
