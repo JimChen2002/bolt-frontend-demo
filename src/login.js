@@ -80,18 +80,14 @@ class LoginPopupSelf extends Component {
     return password_hashed;
   }
 
-  verify_email(version, failed_callback) {
+  verify_email(failed_callback) {
     const old_token = new URL(location.href).searchParams.get('old_token');
     const email = this.ref.email.current.value;
-    const recaptcha_version = version;
-    const recaptcha_token = localStorage['recaptcha'];
     // VALIDATE EMAIL IN FRONT-END HERE
     const body = new URLSearchParams();
     Object.entries({
       email,
       old_token,
-      recaptcha_version,
-      recaptcha_token,
     }).forEach((param) => body.append(...param));
     this.setState(
       {
@@ -115,11 +111,10 @@ class LoginPopupSelf extends Component {
               });
             }
             else{
+              alert('Fail to check email\n');
               this.setState({
                 loading_status: 'done',
-                phase: json.code+1,
               });
-              if (json.code === 3) failed_callback();
             }
           })
           .catch((e) => {
@@ -178,186 +173,145 @@ class LoginPopupSelf extends Component {
     );
   }
 
-  need_recaptcha() {
-    console.log(3);
-  }
-
   render() {
     window.recaptchaOptions = {
       useRecaptchaNet: true,
     };
     return ReactDOM.createPortal(
-      <GoogleReCaptchaProvider
-        reCaptchaKey={process.env.REACT_APP_RECAPTCHA_V3_KEY}
-        useRecaptchaNet={true}
-      >
-        <div>
-          <div className="treehollow-login-popup-shadow" />
-          <div className="treehollow-login-popup margin-popup">
-            <p style={this.state.phase === 0 ? {} : { display: 'none' }}>
-              <label>
-                Email:&nbsp;
-                <input
-                  ref={this.ref.email}
-                  type="email"
-                  autoFocus={true}
-                  placeholder="Input your Email"
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      this.verify_email('v3',()=>{})
-                    }
-                  }}
-                />
-              </label>
-            </p>
-            {this.state.phase === 0 && (
-              <>
-                <p>
-                  <button
-                    onClick={()=>{
-                      this.verify_email('v3',()=>{})
-                    }}
-                  >
-                    <b>Send</b>
-                  </button>
-                </p>
-                <p>
-                  <label>
-                    Verification Code:&nbsp;
-                    <input
-                      ref={this.ref.email_verification}
-                      type="text"
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          this.verify_email_code()
-                        }
-                      }}
-                    />
-                  </label>
-                </p>
-                <p>
-                  <button
-                    onClick={()=>{
-                      this.verify_email_code()
-                    }}
-                  >
-                    <b>Confirm</b>
-                  </button>
-                </p>
-              </>
-            )}
-            
-            {this.state.phase === 1 && (
-              <>
-                <p>
-                  <label>
-                    Phone:&nbsp;
-                    <input
-                      ref={this.ref.phone}
-                      type="tel"
-                      autoFocus={true}
-                      placeholder="Input your phone number"
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          this.verify_phone()
-                        }
-                      }}
-                    />
-                  </label>
-                </p>
-                <p>
-                  <button
-                    onClick={()=>{
-                      this.verify_phone()
-                    }}
-                  >
-                    <b>Send</b>
-                  </button>
-                </p>
-                <p>
-                  <label>
-                    Verification Code:&nbsp;
-                    <input
-                      ref={this.ref.email_verification}
-                      type="text"
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          this.verify_phone_code()
-                        }
-                      }}
-                    />
-                  </label>
-                </p>
-                <p>
-                  <button
-                    onClick={()=>{
-                      this.verify_phone_code()
-                    }}
-                  >
-                    <b>Confirm</b>
-                  </button>
-                </p>
-              </>
-            )}
-            {this.state.phase === 2 && (
-              <>
-                <p>
-                  <b>KYC Form</b>
-                </p>
-                <p>
-                  <label>
-                    Verification code:&nbsp;
-                    <input
-                      ref={this.ref.email_verification}
-                      type="tel"
-                      autoFocus={true}
-                    />
-                  </label>
-                </p>
-              </>
-            )}
-            {this.state.phase === 3 && (
-              <>
-                <p>
-                  <b>Backup Plan</b>
-                </p>
-              </>
-            )}
-            {this.state.phase === 4 && (
-              <>
-                <p>
-                  <b>Enter verification code:</b>
-                </p>
-                <RecaptchaV2Popup
-                  callback={() => {
-                    this.verify_email('v2', () => {
-                      alert('reCAPTCHA failed');
-                    });
+      <div>
+        <div className="treehollow-login-popup-shadow" />
+        <div className="treehollow-login-popup margin-popup">
+          <p style={this.state.phase === 0 ? {} : { display: 'none' }}>
+            <label>
+              Email:&nbsp;
+              <input
+                ref={this.ref.email}
+                type="email"
+                autoFocus={true}
+                placeholder="Input your Email"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    this.verify_email(()=>{})
+                  }
+                }}
+              />
+            </label>
+          </p>
+          {this.state.phase === 0 && (
+            <>
+              <p>
+                <button
+                  onClick={()=>{
+                    this.verify_email(()=>{})
                   }}
                 >
-                  {(do_popup) => (
-                    <p>
-                      {!this.state.recaptcha_verified && (
-                        <GoogleReCaptcha
-                          onVerify={(token) => {
-                            this.setState({
-                              recaptcha_verified: true,
-                            });
-                            console.log(token);
-                            localStorage['recaptcha'] = token;
-                            this.verify_email('v3', do_popup);
-                          }}
-                        />
-                      )}
-                    </p>
-                  )}
-                </RecaptchaV2Popup>
-              </>
-            )}
-          </div>
+                  <b>Send</b>
+                </button>
+              </p>
+              <p>
+                <label>
+                  Verification Code:&nbsp;
+                  <input
+                    ref={this.ref.email_verification}
+                    type="text"
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        this.verify_email_code()
+                      }
+                    }}
+                  />
+                </label>
+              </p>
+              <p>
+                <button
+                  onClick={()=>{
+                    this.verify_email_code()
+                  }}
+                >
+                  <b>Confirm</b>
+                </button>
+              </p>
+            </>
+          )}
+          
+          {this.state.phase === 1 && (
+            <>
+              <p>
+                <label>
+                  Phone:&nbsp;
+                  <input
+                    ref={this.ref.phone}
+                    type="tel"
+                    autoFocus={true}
+                    placeholder="Input your phone number"
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        this.verify_phone()
+                      }
+                    }}
+                  />
+                </label>
+              </p>
+              <p>
+                <button
+                  onClick={()=>{
+                    this.verify_phone()
+                  }}
+                >
+                  <b>Send</b>
+                </button>
+              </p>
+              <p>
+                <label>
+                  Verification Code:&nbsp;
+                  <input
+                    ref={this.ref.email_verification}
+                    type="text"
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        this.verify_phone_code()
+                      }
+                    }}
+                  />
+                </label>
+              </p>
+              <p>
+                <button
+                  onClick={()=>{
+                    this.verify_phone_code()
+                  }}
+                >
+                  <b>Confirm</b>
+                </button>
+              </p>
+            </>
+          )}
+          {this.state.phase === 2 && (
+            <>
+              <p>
+                <b>KYC Form</b>
+              </p>
+              <p>
+                <label>
+                  Verification code:&nbsp;
+                  <input
+                    ref={this.ref.email_verification}
+                    type="tel"
+                    autoFocus={true}
+                  />
+                </label>
+              </p>
+            </>
+          )}
+          {this.state.phase === 3 && (
+            <>
+              <p>
+                <b>Backup Plan</b>
+              </p>
+            </>
+          )}
         </div>
-      </GoogleReCaptchaProvider>,
-      this.popup_anchor,
+      </div>
     );
   }
 }
