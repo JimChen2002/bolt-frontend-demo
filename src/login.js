@@ -21,13 +21,15 @@ class LoginPopupSelf extends Component {
     this.state = {
       loading_status: 'idle',
       recaptcha_verified: false,
-      phase: -1,
-      // excluded_scopes: [],
+      email_verified: false,
+      phase: 0,
     };
 
     this.ref = {
-      username: React.createRef(),
+      email: React.createRef(),
       email_verification: React.createRef(),
+      phone: React.createRef(),
+      phone_verification: React.createRef(),
       password: React.createRef(),
       password_confirm: React.createRef(),
 
@@ -40,27 +42,6 @@ class LoginPopupSelf extends Component {
       this.popup_anchor = document.createElement('div');
       this.popup_anchor.id = LOGIN_POPUP_ANCHOR_ID;
       document.body.appendChild(this.popup_anchor);
-    }
-  }
-
-  next_step() {
-    if (this.state.loading_status === 'loading') return;
-    switch (this.state.phase) {
-      case -1:
-        this.verify_email('v3', () => {});
-        break;
-      case 0:
-        this.do_login(this.props.token_callback);
-        break;
-      case 1:
-        this.new_user_registration(this.props.token_callback);
-        break;
-      case 2:
-        this.old_user_registration(this.props.token_callback);
-        break;
-      case 3:
-        this.need_recaptcha();
-        break;
     }
   }
 
@@ -101,7 +82,7 @@ class LoginPopupSelf extends Component {
 
   verify_email(version, failed_callback) {
     const old_token = new URL(location.href).searchParams.get('old_token');
-    const email = this.ref.username.current.value;
+    const email = this.ref.email.current.value;
     const recaptcha_version = version;
     const recaptcha_token = localStorage['recaptcha'];
     // VALIDATE EMAIL IN FRONT-END HERE
@@ -128,12 +109,12 @@ class LoginPopupSelf extends Component {
             if (json.code < 0) throw new Error(json.msg);
             this.setState({
               loading_status: 'done',
-              phase: json.code,
+              email_verified: true,
             });
             if (json.code === 3) failed_callback();
           })
           .catch((e) => {
-            alert('邮箱检验失败\n' + e);
+            alert('Fail to check email\n' + e);
             this.setState({
               loading_status: 'done',
             });
@@ -143,48 +124,48 @@ class LoginPopupSelf extends Component {
     );
   }
 
-  async do_login(set_token) {
-    const email = this.ref.username.current.value;
-    const password = this.ref.password.current.value;
-    let password_hashed = await this.hashpassword(password);
-    const device_info = UAParser(navigator.userAgent).browser.name;
+  verify_email_code() {
+    if(!this.email_verified){
+      alert("Please enter your email first!");
+      return;
+    }
+    const old_token = new URL(location.href).searchParams.get('old_token');
+    const email = this.ref.email.current.value;
+    const recaptcha_version = version;
+    const recaptcha_token = localStorage['recaptcha'];
+    // VALIDATE EMAIL IN FRONT-END HERE
     const body = new URLSearchParams();
     Object.entries({
       email,
-      password_hashed,
-      device_type: 0,
-      device_info,
+      old_token,
+      recaptcha_version,
+      recaptcha_token,
     }).forEach((param) => body.append(...param));
-
     this.setState(
       {
         loading_status: 'loading',
       },
       () => {
-        fetch(API_ROOT + 'security/login/login?' + API_VERSION_PARAM(), {
+        fetch(API_ROOT + 'security/login/check_email?' + API_VERSION_PARAM(), {
           method: 'POST',
           body,
         })
-          .then(get_json)
+          .then((res) => res.json())
           .then((json) => {
-            if (json.code !== 0) {
-              if (json.msg) throw new Error(json.msg);
-              throw new Error(JSON.stringify(json));
-            }
-
-            set_token(json.token);
-            alert('登录成功');
+            // COMMENT NEXT LINE
+            //json.code = 2;
+            if (json.code < 0) throw new Error(json.msg);
             this.setState({
               loading_status: 'done',
             });
-            this.props.on_close();
+            if (json.code === 3) failed_callback();
           })
           .catch((e) => {
-            console.error(e);
-            alert('登录失败\n' + e);
+            alert('Fail to check email\n' + e);
             this.setState({
               loading_status: 'done',
             });
+            console.error(e);
           });
       },
     );
@@ -192,7 +173,7 @@ class LoginPopupSelf extends Component {
 
   async new_user_registration(set_token) {
     if (this.valid_registration() !== 0) return;
-    const email = this.ref.username.current.value;
+    const email = this.ref.email.current.value;
     const valid_code = this.ref.email_verification.current.value;
     const password = this.ref.password.current.value;
     let password_hashed = await this.hashpassword(password);
@@ -225,7 +206,7 @@ class LoginPopupSelf extends Component {
             }
 
             set_token(json.token);
-            alert('登录成功');
+            alert('Login Successfully!');
             this.setState({
               loading_status: 'done',
             });
@@ -233,59 +214,7 @@ class LoginPopupSelf extends Component {
           })
           .catch((e) => {
             console.error(e);
-            alert('登录失败\n' + e);
-            this.setState({
-              loading_status: 'done',
-            });
-          });
-      },
-    );
-  }
-
-  async old_user_registration(set_token) {
-    if (this.valid_registration() !== 0) return;
-    const email = this.ref.username.current.value;
-    const old_token = new URL(location.href).searchParams.get('old_token');
-    const password = this.ref.password.current.value;
-    let password_hashed = await this.hashpassword(password);
-    const device_info = UAParser(navigator.userAgent).browser.name;
-    const body = new URLSearchParams();
-    Object.entries({
-      email,
-      password_hashed,
-      device_type: 0,
-      device_info,
-      old_token,
-    }).forEach((param) => body.append(...param));
-    this.setState(
-      {
-        loading_status: 'loading',
-      },
-      () => {
-        fetch(
-          API_ROOT + 'security/login/create_account?' + API_VERSION_PARAM(),
-          {
-            method: 'POST',
-            body,
-          },
-        )
-          .then(get_json)
-          .then((json) => {
-            if (json.code !== 0) {
-              if (json.msg) throw new Error(json.msg);
-              throw new Error(JSON.stringify(json));
-            }
-
-            set_token(json.token);
-            alert('登录成功');
-            this.setState({
-              loading_status: 'done',
-            });
-            this.props.on_close();
-          })
-          .catch((e) => {
-            console.error(e);
-            alert('登录失败\n' + e);
+            alert('Login Failed\n' + e);
             this.setState({
               loading_status: 'done',
             });
@@ -310,23 +239,60 @@ class LoginPopupSelf extends Component {
         <div>
           <div className="treehollow-login-popup-shadow" />
           <div className="treehollow-login-popup margin-popup">
-            <p style={this.state.phase === -1 ? {} : { display: 'none' }}>
+            <p style={this.state.phase === 0 ? {} : { display: 'none' }}>
               <label>
                 Email:&nbsp;
                 <input
-                  ref={this.ref.username}
+                  ref={this.ref.email}
                   type="email"
                   autoFocus={true}
                   placeholder="Input your Email"
                   onKeyDown={(event) => {
                     if (event.key === 'Enter') {
-                      this.next_step();
+                      this.verify_email('v3',()=>{})
                     }
                   }}
                 />
               </label>
             </p>
             {this.state.phase === 0 && (
+              <>
+                <p>
+                  <button
+                    onClick={()=>{
+                      this.verify_email('v3',()=>{})
+                    }}
+                  >
+                    <b>Send</b>
+                  </button>
+                </p>
+                <p>
+                  <label>
+                    Verification Code:&nbsp;
+                    <input
+                      ref={this.ref.email_verification}
+                      type="text"
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          this.verify_email_code()
+                        }
+                      }}
+                    />
+                  </label>
+                </p>
+                <p>
+                  <button
+                    onClick={()=>{
+                      this.verify_email_code()
+                    }}
+                  >
+                    <b>Confirm</b>
+                  </button>
+                </p>
+              </>
+            )}
+            
+            {this.state.phase === 1 && (
               <>
                 <p>
                   <label>
@@ -435,15 +401,6 @@ class LoginPopupSelf extends Component {
                 </RecaptchaV2Popup>
               </>
             )}
-            <p>
-              <button
-                onClick={this.next_step.bind(this)}
-                disabled={this.state.loading_status === 'loading'}
-              >
-                Confirm
-              </button>
-              <button onClick={this.props.on_close}>Cancel</button>
-            </p>
           </div>
         </div>
       </GoogleReCaptchaProvider>,
@@ -548,7 +505,7 @@ export class RecaptchaV2Popup extends Component {
               </div>
 
               <p>
-                <button onClick={this.on_close_bound}>取消</button>
+                <button onClick={this.on_close_bound}>Cancel</button>
               </p>
             </div>
           </div>
