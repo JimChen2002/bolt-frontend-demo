@@ -3,5 +3,5 @@ node_modules/
 /build/
 build.*
 .DS_Store
-move_to_webroot.sh
+move-to-webroot.sh
 package-lock.json
