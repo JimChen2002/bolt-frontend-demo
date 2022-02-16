@@ -149,7 +149,7 @@ class LoginPopupSelf extends Component {
           .then((res) => res.json())
           .then((json) => {
             if (json.code !== 0) throw new Error(json.msg);
-            set_token(json.token);
+            this.props.token_callback(json.token);
             alert('Email Checked Successfully!');
             this.setState({
               loading_status: 'done',
